@@ -1,0 +1,29 @@
+{
+  "targetUrl": "http://localhost:5173/siteManage",
+  "records": [
+    {
+      "mn": "MN3201001004",
+      "deviceName": "测试设备",
+      "deviceCategory": "OTHER",
+      "password": "123456",
+      "overdueTime": "2026-03-11",
+      "stationId": "2031189145417900033"
+    },
+    {
+      "mn": "MN3201001004",
+      "deviceName": "测试设备",
+      "deviceCategory": "OTHER",
+      "password": "123456",
+      "overdueTime": "2026-03-11",
+      "stationId": "2031189145417900033"
+    },
+    {
+      "mn": "MN3201001004",
+      "deviceName": "测试设备",
+      "deviceCategory": "OTHER",
+      "password": "123456",
+      "overdueTime": "2026-03-11",
+      "stationId": "2031189145417900033"
+    }
+  ]
+}

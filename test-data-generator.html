@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <title>测试数据可视化生成器</title>
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        padding: 16px 24px 40px;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          "Helvetica Neue", Arial, "Noto Sans", "PingFang SC",
+          "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+        background: #f5f7fa;
+        color: #303133;
+      }
+      h1 {
+        font-size: 20px;
+        margin: 0 0 8px;
+      }
+      .subtitle {
+        font-size: 13px;
+        color: #909399;
+        margin-bottom: 16px;
+      }
+      .panel {
+        background: #ffffff;
+        border-radius: 8px;
+        padding: 16px 18px 18px;
+        margin-bottom: 16px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+      }
+      .panel-title {
+        font-size: 14px;
+        font-weight: 600;
+        margin-bottom: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .panel-title span {
+        font-size: 12px;
+        font-weight: normal;
+        color: #909399;
+      }
+      label {
+        font-size: 13px;
+        margin-bottom: 4px;
+        display: inline-block;
+        color: #606266;
+      }
+      input[type="text"],
+      input[type="number"],
+      textarea,
+      select {
+        width: 100%;
+        padding: 6px 10px;
+        font-size: 13px;
+        border-radius: 4px;
+        border: 1px solid #dcdfe6;
+        outline: none;
+        transition: border-color 0.2s, box-shadow 0.2s;
+      }
+      input[type="text"]:focus,
+      input[type="number"]:focus,
+      textarea:focus,
+      select:focus {
+        border-color: #409eff;
+        box-shadow: 0 0 0 1px rgba(64, 158, 255, 0.15);
+      }
+      textarea {
+        resize: vertical;
+        min-height: 120px;
+        font-family: Consolas, Menlo, Monaco, "Courier New", monospace;
+      }
+      .row {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+      .col {
+        flex: 1;
+        min-width: 260px;
+      }
+      .field-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 13px;
+      }
+      .field-table th,
+      .field-table td {
+        border: 1px solid #ebeef5;
+        padding: 6px 8px;
+        text-align: left;
+      }
+      .field-table th {
+        background: #f5f7fa;
+        font-weight: 600;
+      }
+      .field-table input[type="number"] {
+        width: 90px;
+      }
+      .field-table select {
+        width: 110px;
+      }
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid transparent;
+        border-radius: 4px;
+        padding: 6px 14px;
+        font-size: 13px;
+        cursor: pointer;
+        transition: all 0.15s;
+        background: #409eff;
+        color: #fff;
+      }
+      .btn.secondary {
+        background: #ffffff;
+        color: #606266;
+        border-color: #dcdfe6;
+      }
+      .btn:hover {
+        opacity: 0.9;
+      }
+      .btn:active {
+        transform: translateY(1px);
+      }
+      .btn + .btn {
+        margin-left: 8px;
+      }
+      .footer {
+        font-size: 12px;
+        color: #909399;
+        margin-top: 8px;
+      }
+      .status {
+        font-size: 12px;
+        color: #67c23a;
+      }
+      .status.error {
+        color: #f56c6c;
+      }
+      .tag {
+        display: inline-block;
+        padding: 2px 6px;
+        border-radius: 3px;
+        background: #ecf5ff;
+        color: #409eff;
+        font-size: 12px;
+        margin-left: 6px;
+      }
+      .small-input {
+        width: 72px;
+      }
+      .output-area {
+        min-height: 160px;
+      }
+      @media (max-width: 768px) {
+        body {
+          padding: 12px;
+        }
+        .row {
+          flex-direction: column;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <h1>测试数据可视化生成器</h1>
+    <div class="subtitle">
+      输入一份示例 JSON、数量和字段规则，快速批量生成测试数据。生成结果在下方可以直接复制。
+    </div>
+
+    <div class="panel">
+      <div class="panel-title">
+        基础配置
+      </div>
+      <div class="row" style="margin-bottom: 10px">
+        <div class="col">
+          <label>接口 / 页面地址（例如站点管理页面地址）</label>
+          <input
+            type="text"
+            id="targetUrl"
+            value="http://localhost:5173/siteManage"
+          />
+          <div class="footer">
+            仅作为配置保存或脚本参考，不会直接发请求。
+          </div>
+        </div>
+        <div class="col" style="max-width: 220px">
+          <label>生成条数</label>
+          <input type="number" id="recordCount" min="1" value="10" />
+          <div class="footer">例如填 10 就生成 10 条</div>
+        </div>
+      </div>
+
+      <label>示例数据 JSON（单条）</label>
+      <textarea id="sampleJson" spellcheck="false">
+{
+  "mn": "MN3201001004",
+  "deviceName": "测试设备",
+  "deviceCategory": "OTHER",
+  "password": "123456",
+  "overdueTime": "2026-03-11",
+  "stationId": "2031189145417900033"
+}
+      </textarea>
+      <div style="margin-top: 8px; display: flex; justify-content: space-between; align-items: center;">
+        <div>
+          <button class="btn secondary" id="parseFieldsBtn">解析字段</button>
+          <span id="parseStatus" class="status"></span>
+        </div>
+        <div class="footer">
+          支持任何 JSON 对象，解析后可以针对每个字符串字段配置长度等规则。
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-title">
+        字段规则
+        <span>默认规则：非字符串字段保持原样，字符串字段使用“示例值 + 随机后缀”</span>
+      </div>
+      <div style="overflow-x: auto">
+        <table class="field-table" id="fieldTable">
+          <thead>
+            <tr>
+              <th style="width: 180px">字段名</th>
+              <th style="width: 90px">类型</th>
+              <th style="width: 150px">规则</th>
+              <th style="width: 130px">字符串长度</th>
+              <th>说明</th>
+            </tr>
+          </thead>
+          <tbody id="fieldTableBody">
+            <tr>
+              <td colspan="5" style="text-align: center; color: #909399; padding: 14px 0;">
+                请先点击上方“解析字段”
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-title">
+        生成结果
+        <span>
+          输出为 JSON 数组，可直接复制到接口调试工具 / Mock 服务 / Playwright
+          脚本中使用。
+        </span>
+      </div>
+      <div style="margin-bottom: 8px">
+        <button class="btn" id="generateBtn">生成测试数据</button>
+        <button class="btn secondary" id="copyBtn">复制结果</button>
+        <span id="generateStatus" class="status"></span>
+      </div>
+      <textarea
+        id="output"
+        spellcheck="false"
+        class="output-area"
+        placeholder="点击“生成测试数据”后，这里会显示生成结果..."
+      ></textarea>
+      <div class="footer">
+        生成逻辑为纯前端，不会对后端发任何请求。建议将结果整体复制并保存为
+        `test-data.json` 到与 `run.ts` 同级目录，脚本会自动读取。
+      </div>
+    </div>
+
+    <script>
+      // 简单的状态展示
+      const parseStatus = document.getElementById("parseStatus");
+      const generateStatus = document.getElementById("generateStatus");
+      const sampleJsonEl = document.getElementById("sampleJson");
+      const fieldTableBody = document.getElementById("fieldTableBody");
+
+      /** 当前字段规则缓存 */
+      let fieldRules = {};
+
+      function setStatus(el, text, isError = false) {
+        el.textContent = text || "";
+        el.className = "status" + (isError ? " error" : "");
+        if (text) {
+          setTimeout(() => {
+            el.textContent = "";
+          }, 3000);
+        }
+      }
+
+      function guessType(value) {
+        if (value === null || value === undefined) return "unknown";
+        if (Array.isArray(value)) return "array";
+        return typeof value;
+      }
+
+      function parseSample() {
+        try {
+          const text = sampleJsonEl.value.trim();
+          const obj = JSON.parse(text);
+          if (typeof obj !== "object" || Array.isArray(obj)) {
+            setStatus(parseStatus, "示例 JSON 必须是一个对象（单条数据）", true);
+            return;
+          }
+
+          const entries = Object.entries(obj);
+          if (!entries.length) {
+            setStatus(parseStatus, "对象为空，无法解析字段", true);
+            return;
+          }
+
+          // 根据新的对象重建规则（保留同名字段的旧设置）
+          const newRules = {};
+          entries.forEach(([key, value]) => {
+            const type = guessType(value);
+            const prev = fieldRules[key];
+            if (prev) {
+              newRules[key] = prev;
+            } else {
+              newRules[key] = {
+                type,
+                mode: type === "string" ? "sample_plus_suffix" : "keep",
+                length: type === "string" ? (String(value).length || 10) : 10,
+              };
+            }
+          });
+          fieldRules = newRules;
+          renderFieldTable();
+          setStatus(parseStatus, "字段解析成功，共 " + entries.length + " 个");
+        } catch (e) {
+          console.error(e);
+          setStatus(parseStatus, "JSON 解析失败，请检查格式", true);
+        }
+      }
+
+      function renderFieldTable() {
+        const rows = Object.entries(fieldRules)
+          .map(([key, rule]) => {
+            const isString = rule.type === "string";
+            return `
+            <tr data-field="${key}">
+              <td>${key}</td>
+              <td>${rule.type}</td>
+              <td>
+                ${
+                  isString
+                    ? `<select class="rule-mode">
+                      <option value="sample_plus_suffix" ${
+                        rule.mode === "sample_plus_suffix" ? "selected" : ""
+                      }>示例值 + 随机后缀</option>
+                      <option value="fixed_length_random" ${
+                        rule.mode === "fixed_length_random" ? "selected" : ""
+                      }>固定长度随机字符串</option>
+                      <option value="keep" ${
+                        rule.mode === "keep" ? "selected" : ""
+                      }>保持示例值</option>
+                    </select>`
+                    : `<span class="tag">保持原样</span>`
+                }
+              </td>
+              <td>
+                ${
+                  isString
+                    ? `<input type="number" class="rule-length" min="1" value="${
+                        rule.length || 10
+                      }" />`
+                    : "-"
+                }
+              </td>
+              <td>
+                ${
+                  isString
+                    ? "例如选中字段 deviceName，把长度改成 20，就会生成 20 个字符的名称。"
+                    : "非字符串类型（数字 / 布尔等）默认直接复用示例值。"
+                }
+              </td>
+            </tr>
+          `;
+          })
+          .join("");
+
+        fieldTableBody.innerHTML = rows;
+
+        // 绑定事件
+        fieldTableBody
+          .querySelectorAll("select.rule-mode")
+          .forEach((sel) => {
+            sel.addEventListener("change", (e) => {
+              const tr = e.target.closest("tr");
+              const field = tr.dataset.field;
+              if (fieldRules[field]) {
+                fieldRules[field].mode = e.target.value;
+              }
+            });
+          });
+
+        fieldTableBody
+          .querySelectorAll("input.rule-length")
+          .forEach((inp) => {
+            inp.addEventListener("input", (e) => {
+              const tr = e.target.closest("tr");
+              const field = tr.dataset.field;
+              const v = parseInt(e.target.value, 10);
+              if (fieldRules[field]) {
+                fieldRules[field].length = isNaN(v) || v <= 0 ? 1 : v;
+              }
+            });
+          });
+      }
+
+      // 生成随机字符串（中文或英文）
+      function randomString(len, baseSample) {
+        // 如果示例是中文，就用中文字符池，否则用字母数字
+        const sample = String(baseSample || "");
+        const hasChinese = /[\u4e00-\u9fa5]/.test(sample);
+        const cnChars = "自动化设备监测测试站点名称数据字符长度示例环境";
+        const enChars =
+          "ABCDEFGHJKMNPQRSTWXYZabcdefghijkmnprstwxyz23456789";
+        const pool = hasChinese ? cnChars : enChars;
+        let res = "";
+        for (let i = 0; i < len; i++) {
+          res += pool.charAt(Math.floor(Math.random() * pool.length));
+        }
+        return res;
+      }
+
+      function generateData() {
+        try {
+          const text = sampleJsonEl.value.trim();
+          const base = JSON.parse(text);
+          if (typeof base !== "object" || Array.isArray(base)) {
+            setStatus(
+              generateStatus,
+              "示例 JSON 必须是一个对象（单条数据）",
+              true
+            );
+            return;
+          }
+
+          const countInput = document.getElementById("recordCount");
+          const count = parseInt(countInput.value, 10) || 1;
+
+          const records = [];
+          for (let i = 0; i < count; i++) {
+            const row = {};
+            for (const [key, value] of Object.entries(base)) {
+              const rule = fieldRules[key];
+              if (!rule) {
+                row[key] = value;
+                continue;
+              }
+              if (rule.type !== "string") {
+                row[key] = value;
+                continue;
+              }
+
+              const baseStr = String(value);
+              if (rule.mode === "keep") {
+                row[key] = baseStr;
+              } else if (rule.mode === "fixed_length_random") {
+                row[key] = randomString(rule.length || baseStr.length || 10, baseStr);
+              } else {
+                // sample_plus_suffix
+                const suffix = randomString(
+                  Math.max(4, Math.min(8, rule.length || 4)),
+                  baseStr
+                );
+                let merged = baseStr + "_" + suffix;
+                if (rule.length && merged.length > rule.length) {
+                  merged = merged.slice(0, rule.length);
+                }
+                row[key] = merged;
+              }
+            }
+            records.push(row);
+          }
+
+          const outputEl = document.getElementById("output");
+          const url = document.getElementById("targetUrl").value.trim();
+
+          const bundle = {
+            targetUrl:
+              url || "http://localhost:5173/siteManage",
+            records,
+          };
+
+          outputEl.value = JSON.stringify(bundle, null, 2);
+
+          const summary =
+            "已生成 " +
+            records.length +
+            " 条数据，并打包为 { targetUrl, records } 结构" +
+            (url ? "（目标地址：" + url + "）" : "") +
+            "。";
+          setStatus(generateStatus, summary, false);
+        } catch (e) {
+          console.error(e);
+          setStatus(generateStatus, "生成失败，请检查示例 JSON 格式", true);
+        }
+      }
+
+      function copyOutput() {
+        const outputEl = document.getElementById("output");
+        if (!outputEl.value.trim()) {
+          setStatus(generateStatus, "暂无可复制的内容", true);
+          return;
+        }
+        outputEl.select();
+        document.execCommand("copy");
+        setStatus(generateStatus, "已复制到剪贴板", false);
+      }
+
+      document
+        .getElementById("parseFieldsBtn")
+        .addEventListener("click", parseSample);
+      document
+        .getElementById("generateBtn")
+        .addEventListener("click", generateData);
+      document.getElementById("copyBtn").addEventListener("click", copyOutput);
+
+      // 初始自动解析一次默认示例
+      window.addEventListener("load", () => {
+        parseSample();
+      });
+    </script>
+  </body>
+</html>
+
