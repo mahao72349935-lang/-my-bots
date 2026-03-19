@@ -1,7 +1,6 @@
 {
   "name": "my-bots",
   "version": "1.0.0",
-  "description": "",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -15,9 +14,11 @@
   "devDependencies": {
     "@playwright/test": "^1.58.2",
     "@types/node": "^25.4.0",
-    "tsx": "^4.21.0"
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3"
   },
   "dependencies": {
     "playwright": "^1.58.2"
-  }
+  },
+  "description": ""
 }
