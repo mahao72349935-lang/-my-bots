@@ -40,17 +40,30 @@ export async function fillForm(page: Page, dialog: Locator, fieldConfigs: FieldC
 		} else if (field.type === 'textarea') {
 			await dialog.locator(`.el-form-item:has-text("${field.label}") textarea`).first().fill(String(value));
 		} else if (field.type === 'select') {
-			// 下拉选择器：点击 label，再在弹出的下拉中随机选一个
-			await page.locator('.el-dialog .el-form-item__label').getByText(field.label).click();
+			// 下拉选择器：点击展开，优先选择与 data 中值匹配的选项
+			await dialog.locator(`.el-form-item:has-text("${field.label}") .el-select`).first().click();
+			await page.waitForTimeout(300);
 			const options = page.locator('.el-select-dropdown__item:visible');
 			const count = await options.count();
 			if (count > 0) {
-				const randomIndex = Math.floor(Math.random() * count);
-				const selectedText = await options.nth(randomIndex).innerText();
-				console.log(`字段 ${field.name} 随机选择了第 ${randomIndex + 1} 个选项: ${selectedText}`);
-				await options.nth(randomIndex).click();
+				const targetValue = String(value).trim();
+				let clicked = false;
+				for (let i = 0; i < count; i++) {
+					const optionText = (await options.nth(i).innerText()).trim();
+					if (optionText === targetValue || optionText.includes(targetValue)) {
+						await options.nth(i).click();
+						console.log(`字段 ${field.name} 选择了: ${optionText}`);
+						clicked = true;
+						break;
+					}
+				}
+				if (!clicked) {
+					// 无匹配则选第一个
+					await options.first().click();
+					console.log(`字段 ${field.name} 无匹配选项，选择了第一个`);
+				}
 			} else {
-				console.error(`字段 ${field.name} 未能找到下拉选项，请检查下拉框是否成功展开`);
+				console.error(`字段 ${field.name} 未能找到下拉选项`);
 			}
 		}
 	}

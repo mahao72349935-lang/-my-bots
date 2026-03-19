@@ -5,7 +5,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "tsx add.ts",
-    "start:test": "tsx test.ts"
+    "start:test": "tsx test.ts",
+    "start:bot": "tsx service/botService.ts"
   },
   "keywords": [],
   "author": "",
@@ -19,7 +20,9 @@
   },
   "dependencies": {
     "cors": "^2.8.6",
+    "dotenv": "^17.3.1",
     "express": "^5.2.1",
+    "openai": "^6.32.0",
     "playwright": "^1.58.2"
   },
   "description": ""

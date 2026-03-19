@@ -1,63 +1,16 @@
+/*
+ * @Description:
+ * @Author: mahao
+ * @Date: 2026-03-17 15:16:18
+ * @LastEditors: mahao
+ * @LastEditTime: 2026-03-19 18:46:10
+ */
 import { chromium } from '@playwright/test';
 import { fillForm } from './components/Form';
 
-const fakerData = [
-	{
-		mn: 'MN194208',
-		deviceName: 'VOCs在线监测系统',
-		password: '123456',
-		deviceCategory: 'OTHER',
-		overdueTime: '2026-03-11',
-		stationId: '2031189145417900033',
-	},
-	{
-		mn: 'MN194209',
-		deviceName: '智慧农业环境传感器',
-		password: '123456',
-		deviceCategory: 'OTHER',
-		overdueTime: '2026-03-11',
-		stationId: '2031189145417900033',
-	},
-];
+const fakerData = [];
 
-const typeFakerData = [
-	{
-		name: 'mn',
-		type: 'input',
-		placeholder: 'MN编码',
-		label: 'MN编码',
-	},
-	{
-		name: 'deviceName',
-		type: 'input',
-		placeholder: '设备名称',
-		label: '设备名称',
-	},
-	{
-		name: 'password',
-		type: 'input',
-		placeholder: '设备密码',
-		label: '设备密码',
-	},
-	{
-		name: 'deviceCategory',
-		type: 'select',
-		placeholder: '设备分类',
-		label: '设备分类',
-	},
-	{
-		name: 'overdueTime',
-		type: 'date',
-		placeholder: '过期时间',
-		label: '过期时间',
-	},
-	{
-		name: 'stationId',
-		type: 'select',
-		placeholder: '所属站点',
-		label: '所属站点',
-	},
-];
+const typeFakerData = [];
 
 async function run() {
 	const browser = await chromium.launch({
