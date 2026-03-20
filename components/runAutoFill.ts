@@ -12,7 +12,8 @@ export interface ReceivedData {
 	formFields: Array<{ name: string; type: string; placeholder?: string; label: string }>;
 	location: string;
 	menuName: string;
-	mockData: Record<string, string | number>;
+	/** mockData 为数组，每条对应一次表单填充 */
+	mockData: Record<string, string | number>[];
 }
 
 /**
@@ -23,7 +24,9 @@ export async function runAutoFill(data?: ReceivedData): Promise<void> {
 	const resolvedData: ReceivedData = data ?? JSON.parse(readFileSync(join(__dirname, '..', 'data', 'receivedData.json'), 'utf-8'));
 	const { location, menuName, formFields, mockData } = resolvedData;
 
-	if (!mockData || Object.keys(mockData).length === 0) {
+	// 兼容旧格式：mockData 可为数组或单条对象
+	const mockDataList = Array.isArray(mockData) ? mockData : mockData ? [mockData] : [];
+	if (mockDataList.length === 0 || mockDataList.every((m) => !m || Object.keys(m).length === 0)) {
 		throw new Error('mockData 为空，无法填充表单');
 	}
 
@@ -62,25 +65,28 @@ export async function runAutoFill(data?: ReceivedData): Promise<void> {
 			// 可能已在目标页，跳过
 		}
 
-		// 4. 点击新增按钮
 		const addButton = page.locator('button.el-button:has-text("新"), button.el-button:has-text("新增")').first();
 		await addButton.waitFor({ state: 'visible', timeout: 5000 });
-		await addButton.click();
-		console.log('➕ 已点击新增');
 
-		// 5. 等待弹窗出现
-		const dialog = page.locator('.el-dialog').last();
-		await dialog.waitFor({ state: 'visible', timeout: 5000 });
+		for (let i = 0; i < mockDataList.length; i++) {
+			await addButton.click();
+			console.log(`➕ 已点击新增 (${i + 1}/${mockDataList.length})`);
 
-		// 6. 使用 fillForm 填充表单
-		await fillForm(page, dialog, formFields, mockData);
-		console.log('📝 表单已填充');
+			// 5. 等待弹窗出现
+			const dialog = page.locator('.el-dialog').last();
+			await dialog.waitFor({ state: 'visible', timeout: 5000 });
 
-		// 7. 点击确定
-		const confirmBtn = dialog.locator('button.el-button--primary:has-text("确"), .el-dialog__footer button:has-text("确定")').first();
-		await confirmBtn.click();
+			// 6. 使用 fillForm 填充表单
+			await fillForm(page, dialog, formFields, mockDataList[i]);
+			console.log(`📝 表单已填充 (${i + 1}/${mockDataList.length})`);
 
-		await dialog.waitFor({ state: 'hidden', timeout: 5000 });
+			// 7. 点击确定
+			const confirmBtn = dialog.locator('button.el-button--primary:has-text("确"), .el-dialog__footer button:has-text("确定")').first();
+			await confirmBtn.click();
+
+			await dialog.waitFor({ state: 'hidden', timeout: 5000 });
+			if (i < mockDataList.length - 1) await page.waitForTimeout(500);
+		}
 		console.log('✅ 表单提交成功');
 	} catch (error) {
 		console.error('❌ 自动填充失败:', error);

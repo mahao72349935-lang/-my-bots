@@ -10,7 +10,7 @@ import { Page, Locator } from '@playwright/test';
 export interface FieldConfig {
 	name: string;
 	type: string;
-	placeholder: string;
+	placeholder?: string;
 	label: string;
 }
 
