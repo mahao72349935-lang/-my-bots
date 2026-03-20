@@ -3,11 +3,12 @@
  * @Author: mahao
  * @Date: 2026-03-19 16:59:26
  * @LastEditors: mahao
- * @LastEditTime: 2026-03-20 14:09:16
+ * @LastEditTime: 2026-03-20 17:27:24
  */
 const express = require('express');
 const cors = require('cors');
 const { runAutoFill } = require('../components/runAutoFill');
+const { runFilterDelete } = require('../components/runFilterDelete');
 
 const app = express();
 app.use(cors());
@@ -54,8 +55,48 @@ app.post('/api/run-playwright', async (req, res) => {
 	}
 });
 
+app.post('/api/run-delete', async (req, res) => {
+	const body = req.body || {};
+	const { filters, location, menuName } = body;
+
+	if (!Array.isArray(filters) || filters.length === 0) {
+		return res.status(400).json({
+			success: false,
+			message: '缺少 filters 或 filters 为空数组',
+		});
+	}
+	if (!location || !menuName) {
+		return res.status(400).json({
+			success: false,
+			message: '缺少 location 或 menuName',
+		});
+	}
+	const bad = filters.find((f) => !f || !f.label || f.value === undefined || f.value === null || f.value === '');
+	if (bad !== undefined) {
+		return res.status(400).json({
+			success: false,
+			message: 'filters 中每项均需包含 label 与 value',
+		});
+	}
+
+	const payload = { filters, location, menuName };
+
+	try {
+		res.json({ success: true, message: '正在执行删除任务' });
+		await runFilterDelete(payload);
+		console.log('🎉 删除流程完成');
+	} catch (err) {
+		console.error('❌ 删除失败:', err);
+		res.status(500).json({
+			success: false,
+			message: err.message || '删除失败',
+			error: String(err),
+		});
+	}
+});
+
 const PORT = 3000;
 app.listen(PORT, () => {
 	console.log(`✨ 本地自动化服务: http://localhost:${PORT}`);
-	console.log(`POST /api/run-playwright`);
+	console.log(`POST /api/run-playwright  |  POST /api/run-delete`);
 });
