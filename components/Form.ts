@@ -3,7 +3,7 @@
  * @Author: mahao
  * @Date: 2026-03-12 15:00:58
  * @LastEditors: mahao
- * @LastEditTime: 2026-03-12 16:13:18
+ * @LastEditTime: 2026-03-20 14:32:29
  */
 import { Page, Locator } from '@playwright/test';
 
@@ -40,16 +40,28 @@ export async function fillForm(page: Page, dialog: Locator, fieldConfigs: FieldC
 		} else if (field.type === 'textarea') {
 			await dialog.locator(`.el-form-item:has-text("${field.label}") textarea`).first().fill(String(value));
 		} else if (field.type === 'select') {
-			// 下拉：假数据与真实选项往往对不上，在可见项中随机选一项
+			// 下拉选择器：点击展开，优先选择与 data 中值匹配的选项
 			await dialog.locator(`.el-form-item:has-text("${field.label}") .el-select`).first().click();
 			await page.waitForTimeout(300);
 			const options = page.locator('.el-select-dropdown__item:visible');
 			const count = await options.count();
 			if (count > 0) {
-				const idx = Math.floor(Math.random() * count);
-				const optionText = (await options.nth(idx).innerText()).trim();
-				await options.nth(idx).click();
-				console.log(`字段 ${field.name} 随机选择 (${idx + 1}/${count}): ${optionText}`);
+				const targetValue = String(value).trim();
+				let clicked = false;
+				for (let i = 0; i < count; i++) {
+					const optionText = (await options.nth(i).innerText()).trim();
+					if (optionText === targetValue || optionText.includes(targetValue)) {
+						await options.nth(i).click();
+						console.log(`字段 ${field.name} 选择了: ${optionText}`);
+						clicked = true;
+						break;
+					}
+				}
+				if (!clicked) {
+					// 无匹配则选第一个
+					const idx = Math.floor(Math.random() * count);
+					await options.nth(idx).click();
+				}
 			} else {
 				console.error(`字段 ${field.name} 未能找到下拉选项`);
 			}
