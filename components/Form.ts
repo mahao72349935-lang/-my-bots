@@ -3,7 +3,7 @@
  * @Author: mahao
  * @Date: 2026-03-12 15:00:58
  * @LastEditors: mahao
- * @LastEditTime: 2026-03-20 14:32:29
+ * @LastEditTime: 2026-03-23 17:10:02
  */
 import { Page, Locator } from '@playwright/test';
 
@@ -43,7 +43,7 @@ export async function fillForm(page: Page, dialog: Locator, fieldConfigs: FieldC
 			// 下拉选择器：点击展开，优先选择与 data 中值匹配的选项
 			await dialog.locator(`.el-form-item:has-text("${field.label}") .el-select`).first().click();
 			await page.waitForTimeout(300);
-			const options = page.locator('.el-select-dropdown__item:visible');
+			const options = page.locator('.el-select-dropdown__item:visible:not(.is-disabled)');
 			const count = await options.count();
 			if (count > 0) {
 				const targetValue = String(value).trim();
@@ -58,9 +58,13 @@ export async function fillForm(page: Page, dialog: Locator, fieldConfigs: FieldC
 					}
 				}
 				if (!clicked) {
-					// 无匹配则选第一个
-					const idx = Math.floor(Math.random() * count);
-					await options.nth(idx).click();
+					// 无匹配：仅一项选第一项，多项则随机
+					if (count === 1) {
+						await options.nth(0).click();
+					} else {
+						const idx = Math.floor(Math.random() * count);
+						await options.nth(idx).click();
+					}
 				}
 			} else {
 				console.error(`字段 ${field.name} 未能找到下拉选项`);
