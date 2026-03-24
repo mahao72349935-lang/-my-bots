@@ -3,7 +3,7 @@
  * @Author: mahao
  * @Date: 2026-03-12 15:00:58
  * @LastEditors: mahao
- * @LastEditTime: 2026-03-23 17:10:02
+ * @LastEditTime: 2026-03-24 09:48:53
  */
 import { Page, Locator } from '@playwright/test';
 
@@ -34,6 +34,7 @@ export async function fillForm(page: Page, dialog: Locator, fieldConfigs: FieldC
 			await page.keyboard.press('Enter');
 			continue;
 		}
+		// 经度
 
 		if (field.type === 'input') {
 			await dialog.locator(`.el-form-item:has-text("${field.label}") input`).first().fill(String(value));
