@@ -1,5 +1,6 @@
 import { Router } from 'express';
-import { runDelete, runPlaywright } from '../controllers/PlaywrightController';
+import { runPlaywright } from '../controllers/AutoFillController';
+import { runDelete } from '../controllers/FilterDeleteController';
 
 const router = Router();
 

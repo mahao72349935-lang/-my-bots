@@ -3,12 +3,7 @@
   "version": "1.0.0",
   "main": "src/main.ts",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "tsx src/scripts/add.ts",
-    "start:test": "tsx src/scripts/test.ts",
     "start:bot": "tsx src/main.ts",
-    "start:flow": "tsx src/scripts/site-device-flow.ts",
-    "start:run": "tsx src/scripts/run.ts",
     "typecheck": "tsc --noEmit"
   },
   "keywords": [],
