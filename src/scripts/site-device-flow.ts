@@ -6,8 +6,8 @@
  * @LastEditTime: 2026-03-12 16:40:04
  */
 import { chromium } from '@playwright/test';
-import { fillForm } from './components/Form';
-import { deviceFakerData, deviceTypeFakerData, siteFakerData, siteTypeFakerData } from './fakerData/index';
+import { fillForm } from '../components/FormHandler';
+import { deviceFakerData, deviceTypeFakerData, siteFakerData, siteTypeFakerData } from '../fixtures';
 
 async function run() {
 	const browser = await chromium.launch({

@@ -4,7 +4,7 @@
  * @Date: 2026-03-19
  */
 import { chromium } from 'playwright';
-import { fillForm } from './Form';
+import { fillForm } from '../components/FormHandler';
 
 export interface ReceivedData {
 	formFields: Array<{ name: string; type: string; placeholder?: string; label: string }>;

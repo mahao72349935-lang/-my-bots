@@ -6,11 +6,11 @@
  * @LastEditTime: 2026-03-19 18:46:10
  */
 import { chromium } from '@playwright/test';
-import { fillForm } from './components/Form';
+import { fillForm, type FieldConfig } from '../components/FormHandler';
 
-const fakerData = [];
+const fakerData: Record<string, unknown>[] = [];
 
-const typeFakerData = [];
+const typeFakerData: FieldConfig[] = [];
 
 async function run() {
 	const browser = await chromium.launch({
