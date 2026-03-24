@@ -5,6 +5,7 @@
  */
 import { chromium } from 'playwright';
 import { fillForm } from '../components/FormHandler';
+import { navigateLoginAndMenu } from '../utils/navigateLoginAndMenu';
 
 export interface ReceivedData {
 	formFields: Array<{ name: string; type: string; placeholder?: string; label: string }>;
@@ -38,28 +39,7 @@ export async function runAutoFill(data: ReceivedData): Promise<void> {
 		const page = await context.newPage();
 
 		try {
-			await page.goto(location);
-			console.log('🚀 已进入页面:', location);
-
-			const loginButton = page.locator('button.el-button:has-text("登"), button.el-button:has-text("登录")').first();
-			try {
-				await loginButton.waitFor({ state: 'visible', timeout: 3000 });
-				await loginButton.click();
-				console.log('🔐 已点击登录');
-				await page.waitForTimeout(1500);
-			} catch {
-				// 无登录按钮则跳过
-			}
-
-			try {
-				const menuItem = page.locator(`.el-menu-item:has-text("${menuName}")`).first();
-				await menuItem.waitFor({ state: 'visible', timeout: 3000 });
-				await menuItem.click();
-				console.log('📋 已点击菜单:', menuName);
-				await page.waitForTimeout(800);
-			} catch {
-				// 可能已在目标页，跳过
-			}
+			await navigateLoginAndMenu(page, location, menuName);
 
 			const addButton = page.locator('button.el-button:has-text("新"), button.el-button:has-text("新增")').first();
 			await addButton.waitFor({ state: 'visible', timeout: 5000 });
