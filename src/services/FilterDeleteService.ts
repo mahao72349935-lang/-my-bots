@@ -4,36 +4,14 @@
  * @Date: 2026-03-20
  */
 import { chromium, Page } from 'playwright';
+import { navigateLoginAndMenu } from '../utils/pageNavigator';
 
 export interface FilterDeletePayload {
 	filters: { label: string; value: string }[];
 	location: string;
 	menuName: string;
-}
-
-async function navigateLoginAndMenu(page: Page, location: string, menuName: string): Promise<void> {
-	await page.goto(location);
-	console.log('🚀 已进入页面:', location);
-
-	const loginButton = page.locator('button.el-button:has-text("登"), button.el-button:has-text("登录")').first();
-	try {
-		await loginButton.waitFor({ state: 'visible', timeout: 3000 });
-		await loginButton.click();
-		console.log('🔐 已点击登录');
-		await page.waitForTimeout(1500);
-	} catch {
-		// 无登录入口则跳过
-	}
-
-	try {
-		const menuItem = page.locator(`.el-menu-item:has-text("${menuName}")`).first();
-		await menuItem.waitFor({ state: 'visible', timeout: 3000 });
-		await menuItem.click();
-		console.log('📋 已点击菜单:', menuName);
-		await page.waitForTimeout(800);
-	} catch {
-		// 可能已在目标页
-	}
+	username: string;
+	password: string;
 }
 
 /** 在列表页筛选区按 label 定位表单项，根据 DOM 判断 input / select 并写入 value */
@@ -128,7 +106,7 @@ async function deleteAllVisibleRows(page: Page): Promise<void> {
  * 打开浏览器 → 登录 → 进菜单 → 填筛选条件 → 查询 → 删除表格中所有行
  */
 export async function runFilterDelete(payload: FilterDeletePayload): Promise<void> {
-	const { filters, location, menuName } = payload;
+	const { filters, location, menuName, username, password } = payload;
 	if (!Array.isArray(filters) || filters.length === 0 || !location || !menuName) {
 		throw new Error('runFilterDelete 需要 filters（非空数组）、location、menuName');
 	}
@@ -143,7 +121,7 @@ export async function runFilterDelete(payload: FilterDeletePayload): Promise<voi
 		const page = await context.newPage();
 
 		try {
-			await navigateLoginAndMenu(page, location, menuName);
+			await navigateLoginAndMenu(page, location, menuName, username, password);
 			for (const { label, value } of filters) {
 				await fillFilterField(page, label, value);
 			}
