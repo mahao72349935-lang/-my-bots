@@ -6,7 +6,7 @@ import { runFilterDelete } from '../services/FilterDeleteService';
 
 export async function runDelete(req: Request, res: Response): Promise<void> {
 	const body = req.body || {};
-	const { filters, location, menuName } = body;
+	const { filters, location, menuName, username, password } = body;
 
 	if (!Array.isArray(filters) || filters.length === 0) {
 		res.status(400).json({
@@ -31,7 +31,7 @@ export async function runDelete(req: Request, res: Response): Promise<void> {
 		return;
 	}
 
-	const payload = { filters, location, menuName };
+	const payload = { filters, location, menuName, username, password };
 
 	try {
 		res.json({ success: true, message: '正在执行删除任务' });

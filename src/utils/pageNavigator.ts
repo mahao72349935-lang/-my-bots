@@ -21,12 +21,17 @@ export async function navigateLoginAndMenu(
 
 	const loginButton = page.locator('button.el-button:has-text("登"), button.el-button:has-text("登录")').first();
 	try {
-		await loginButton.waitFor({ state: 'visible', timeout: 3000 });
+		await loginButton.waitFor({ state: 'visible', timeout: 1000 });
 
-		// 填写用户名和密码
+		// 等待并填写用户名和密码
 		const usernameInput = page.locator('input[placeholder="请输入用户名"]').first();
+		console.log('%c [ usernameInput ]-28', 'font-size:13px; background:pink; color:#bf2c9f;', usernameInput,username)
 		const passwordInput = page.locator('input[placeholder="请输入密码"]').first();
+		console.log('%c [ passwordInput ]-29', 'font-size:13px; background:pink; color:#bf2c9f;', passwordInput,password)
+
+		await usernameInput.waitFor({ state: 'visible', timeout: 1000 });
 		await usernameInput.fill(username);
+		await passwordInput.waitFor({ state: 'visible', timeout: 1000 });
 		await passwordInput.fill(password);
 		console.log('📝 已填写用户名和密码');
 

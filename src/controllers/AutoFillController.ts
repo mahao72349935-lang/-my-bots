@@ -8,7 +8,7 @@ import { normalizeMockData } from '../utils/normalize';
 
 export async function runPlaywright(req: Request, res: Response): Promise<void> {
 	const body = req.body || {};
-	const { formFields = [], location, menuName, mockData: rawMock } = body;
+	const { formFields = [], location, menuName, mockData: rawMock, username, password } = body;
 
 	const mockData = normalizeMockData(rawMock);
 
@@ -27,7 +27,7 @@ export async function runPlaywright(req: Request, res: Response): Promise<void> 
 		return;
 	}
 
-	const payload = { formFields, location, menuName, mockData };
+	const payload = { formFields, location, menuName, mockData, username, password };
 	console.log('📥 收到插件数据:', { location, menuName, rows: mockData.length });
 
 	try {
